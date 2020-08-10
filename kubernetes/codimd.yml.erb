@@ -1,0 +1,112 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: codimd
+  name: codimd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: codimd
+    spec:
+      containers:
+      - env:
+        - name: CMD_DOMAIN
+          value: "notes.ocf.berkeley.edu"
+        - name: CMD_PROTOCOL_USESSL
+          value: "true"
+        - name: CMD_ALLOW_ANONYMOUS
+          value: "false"
+        - name: CMD_ALLOW_ANONYMOUS_EDITS
+          value: "false"
+        - name: CMD_EMAIL
+          value: "false"
+        - name: CMD_ALLOW_EMAIL_REGISTER
+          value: "false"
+        - name: CMD_SAML_ISSUER
+          value: "codimd"
+        - name: CMD_SAML_IDENTIFIERFORMAT
+          value: "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+        - name: CMD_SAML_IDPSSOURL
+          value: "https://auth.ocf.berkeley.edu/auth/realms/ocf/protocol/saml"
+        - name: CMD_SAML_IDPCERT
+          value: "/config/keycloak.pem"
+        - name: CMD_SAML_ATTRIBUTE_EMAIL
+          value: "email"
+        - name: CMD_SAML_ATTRIBUTE_USERNAME
+          value: "username"
+        - name: DB_HOST
+          value: <%= mysql_db_host %>
+        - name: DB_NAME
+          value: <%= mysql_db_name %>
+        - name: DB_PASS
+          value: <%= mysql_db_pass %>
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_USER
+          value: <%= mysql_db_user %>
+        - name: PGID
+          value: "1000"
+        - name: PUID
+          value: "1000"
+        - name: TZ
+          value: America/Los_Angeles
+        image: linuxserver/codimd:1.6.0-ls43
+        name: codimd
+        ports:
+        - name: http
+          containerPort: 3000
+        volumeMounts:
+        - mountPath: /config
+          name: codimd-claim0
+      restartPolicy: Always
+      volumes:
+      - name: codimd-claim0
+        persistentVolumeClaim:
+          claimName: codimd-claim0
+---
+apiVersion: v1                                                                                    
+kind: Service                                                                                     
+metadata:                                                                                         
+  labels:                                                                                         
+    app: codimd                                                                               
+  name: codimd
+spec:                                                                                             
+  type: ClusterIP                                                                                 
+  ports:                                                                                          
+  - port: 80                                                                                      
+    protocol: TCP                                                                                 
+    targetPort: 3000
+  selector:                                                                                       
+    app: codimd
+---
+apiVersion: extensions/v1beta1                                                                    
+kind: Ingress                                                                                     
+metadata:                                                                                         
+  labels:                                                                                         
+    app: codimd
+  name: vhost-ingress                                                                             
+spec:                                                                                             
+  rules:                                                                                          
+    - host: notes.ocf.berkeley.edu                                                                 
+      http:                                                                                       
+        paths:                                                                                    
+          - backend:                                                                              
+              serviceName: codimd
+              servicePort: 80     
+---                                                                                               
+apiVersion: v1                                                                                    
+kind: PersistentVolumeClaim                                                                       
+metadata:                                                                                         
+  name: codimd-claim0                                                                             
+spec:                                                                                             
+  accessModes:                                                                                    
+  - ReadWriteMany                                                                                 
+  resources:                                                                                      
+    requests:                                                                                     
+      storage: 8Gi                                                                                
+  storageClassName: managed-nfs-storage
