@@ -92,7 +92,9 @@ kind: Ingress
 metadata:                                                                                         
   labels:                                                                                         
     app: codimd
-  name: vhost-ingress                                                                             
+  name: vhost-ingress 
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 80m
 spec:                                                                                             
   rules:                                                                                          
     - host: notes.ocf.berkeley.edu                                                                 
