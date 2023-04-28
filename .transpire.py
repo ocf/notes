@@ -150,7 +150,3 @@ def objects():
     yield dep.build()
     yield svc.build()
     yield ing.build()
-
-
-def images():
-    yield Image(name="notes", path=Path("/"))
