@@ -45,6 +45,8 @@ def objects():
         data={"keycloak.pem": b64encode(KEYCLOAK_PEM.encode("ascii")).decode("ascii")},
     )
 
+    yield cm.build()
+
     dep = Deployment(
         name="hedgedoc",
         image="quay.io/hedgedoc/hedgedoc:1.9.7-alpine",
@@ -134,6 +136,8 @@ def objects():
         },
     ]
 
+    yield dep.build()
+
     svc = Service(
         name="hedgedoc",
         selector=dep.get_selector(),
@@ -141,12 +145,12 @@ def objects():
         port_on_svc=80,
     )
 
+    yield svc.build()
+
     ing = Ingress.from_svc(
         svc=svc,
         host="dev-notes.ocf.berkeley.edu",
         path_prefix="/",
     )
 
-    yield dep.build()
-    yield svc.build()
     yield ing.build()
