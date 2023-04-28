@@ -1,8 +1,4 @@
-from base64 import b64encode
-from pathlib import Path
-
 from transpire.resources import ConfigMap, Deployment, Ingress, Service
-from transpire.types import Image
 
 name = "notes"
 
@@ -40,10 +36,7 @@ def objects():
         },
     }
 
-    cm = ConfigMap(
-        "keycloak-pem",
-        data={"keycloak.pem": b64encode(KEYCLOAK_PEM.encode("ascii")).decode("ascii")},
-    )
+    cm = ConfigMap("keycloak-pem", data={"keycloak.pem": KEYCLOAK_PEM})
 
     yield cm.build()
 
@@ -81,8 +74,7 @@ def objects():
         "CMD_SAML_IDPCERT": "/keycloak.pem",
         "CMD_SAML_ATTRIBUTE_EMAIL": "email",
         "CMD_SAML_ATTRIBUTE_USERNAME": "username",
-        "CMD_DB_DATABASE": "notes",
-        "CMD_DB_HOST": "ocf-notes",
+        "CMD_DB_URL": "postgres://$(_DB_USER):$(_DB_PASS)@ocf-notes:5432/notes?sslmode=require",
         "CMD_DB_DIALECT": "postgres",
         "CMD_S3_ENDPOINT": "https://o3.ocf.io",
     }
@@ -90,7 +82,7 @@ def objects():
     dep.obj.spec.template.spec.containers[0].env = [
         *[{"name": k, "value": v} for k, v in env.items()],
         {
-            "name": "CMD_DB_USERNAME",
+            "name": "_DB_USER",
             "valueFrom": {
                 "secretKeyRef": {
                     "name": "notes.ocf-notes.credentials.postgresql.acid.zalan.do",
@@ -99,7 +91,7 @@ def objects():
             },
         },
         {
-            "name": "CMD_DB_PASSWORD",
+            "name": "_DB_PASS",
             "valueFrom": {
                 "secretKeyRef": {
                     "name": "notes.ocf-notes.credentials.postgresql.acid.zalan.do",
