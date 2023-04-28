@@ -36,7 +36,7 @@ def objects():
         "metadata": {"name": "ocf-notes-bucket"},
         "spec": {
             "generateBucketName": "ocf-notes",
-            "storageClassName": "rbd-nvme",
+            "storageClassName": "rgw-hdd",
         },
     }
 
