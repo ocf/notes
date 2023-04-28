@@ -119,7 +119,7 @@ def objects():
         {
             "name": "CMD_S3_ACCESS_KEY_ID",
             "valueFrom": {
-                "configMapKeyRef": {
+                "secretKeyRef": {
                     "name": "ocf-notes-bucket",
                     "key": "AWS_ACCESS_KEY_ID",
                 }
@@ -128,7 +128,7 @@ def objects():
         {
             "name": "CMD_S3_SECRET_ACCESS_KEY",
             "valueFrom": {
-                "configMapKeyRef": {
+                "secretKeyRef": {
                     "name": "ocf-notes-bucket",
                     "key": "AWS_SECRET_ACCESS_KEY",
                 }
