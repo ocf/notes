@@ -62,7 +62,7 @@ def objects():
     ]
 
     env = {
-        "CMD_DOMAIN": "dev-notes.ocf.berkeley.edu",
+        "CMD_DOMAIN": "notes.ocf.berkeley.edu",
         "CMD_PROTOCOL_USESSL": "true",
         "CMD_ALLOW_ANONYMOUS": "false",
         "CMD_ALLOW_ANONYMOUS_EDITS": "false",
@@ -141,7 +141,7 @@ def objects():
 
     ing = Ingress.from_svc(
         svc=svc,
-        host="dev-notes.ocf.berkeley.edu",
+        host="notes.ocf.berkeley.edu",
         path_prefix="/",
     )
 
