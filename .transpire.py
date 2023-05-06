@@ -74,7 +74,7 @@ def objects():
         "CMD_SAML_IDPCERT": "/keycloak.pem",
         "CMD_SAML_ATTRIBUTE_EMAIL": "email",
         "CMD_SAML_ATTRIBUTE_USERNAME": "username",
-        "CMD_DB_URL": "postgres://$(_DB_USER):$(_DB_PASS)@ocf-notes:5432/notes?ssl=require",
+        "CMD_DB_URL": "postgres://$(_DB_USER):$(_DB_PASS)@ocf-notes:5432/notes?ssl=no-verify",
         "CMD_DB_DIALECT": "postgres",
         "CMD_S3_ENDPOINT": "https://o3.ocf.io",
     }
