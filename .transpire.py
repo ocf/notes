@@ -18,7 +18,7 @@ def objects():
                 "size": "8Gi",
                 "storageClass": "rbd-nvme",
             },
-            "numberOfInstances": 3,
+            "numberOfInstances": 1,
             "users": {"notes": ["superuser", "createdb"]},
             "databases": {"notes": "notes"},
             "postgresql": {"version": "15"},
