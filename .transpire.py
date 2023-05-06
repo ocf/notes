@@ -80,7 +80,6 @@ def objects():
     }
 
     dep.obj.spec.template.spec.containers[0].env = [
-        *[{"name": k, "value": v} for k, v in env.items()],
         {
             "name": "_DB_USER",
             "valueFrom": {
@@ -126,6 +125,7 @@ def objects():
                 }
             },
         },
+        *[{"name": k, "value": v} for k, v in env.items()],
     ]
 
     yield dep.build()
