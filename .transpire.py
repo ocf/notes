@@ -1,4 +1,4 @@
-from transpire.resources import ConfigMap, Deployment, Ingress, Service
+from transpire.resources import ConfigMap, Deployment, Ingress, Secret, Service
 
 name = "notes"
 
@@ -37,8 +37,16 @@ def objects():
     }
 
     cm = ConfigMap("keycloak-pem", data={"keycloak.pem": KEYCLOAK_PEM})
-
     yield cm.build()
+
+    secret = Secret(
+        "hedgedoc",
+        string_data={
+            "session-secret": "",
+            "oidc-client-secret": "",
+        },
+    )
+    yield secret.build()
 
     dep = Deployment(
         name="hedgedoc",
@@ -68,12 +76,15 @@ def objects():
         "CMD_ALLOW_ANONYMOUS_EDITS": "false",
         "CMD_EMAIL": "false",
         "CMD_ALLOW_EMAIL_REGISTER": "false",
-        "CMD_SAML_ISSUER": "codimd",
-        "CMD_SAML_IDENTIFIERFORMAT": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
-        "CMD_SAML_IDPSSOURL": "https://auth.ocf.berkeley.edu/auth/realms/ocf/protocol/saml",
-        "CMD_SAML_IDPCERT": "/keycloak.pem",
-        "CMD_SAML_ATTRIBUTE_EMAIL": "email",
-        "CMD_SAML_ATTRIBUTE_USERNAME": "username",
+        "CMD_OAUTH2_USER_PROFILE_URL": "https://idm.ocf.berkeley.edu/auth/realms/ocf/protocol/openid-connect/userinfo",
+        "CMD_OAUTH2_USER_PROFILE_USERNAME_ATTR": "preferred_username",
+        "CMD_OAUTH2_USER_PROFILE_DISPLAY_NAME_ATTR": "name",
+        "CMD_OAUTH2_USER_PROFILE_EMAIL_ATTR": "email",
+        "CMD_OAUTH2_TOKEN_URL": "https://idm.ocf.berkeley.edu/auth/realms/ocf/protocol/openid-connect/token",
+        "CMD_OAUTH2_AUTHORIZATION_URL": "https://idm.ocf.berkeley.edu/auth/realms/ocf/protocol/openid-connect/auth",
+        "CMD_OAUTH2_CLIENT_ID": "hedgedoc",
+        "CMD_OAUTH2_PROVIDERNAME": "OCF",
+        "CMD_OAUTH2_SCOPE": "openid email profile",
         "CMD_DB_URL": "postgres://$(_DB_USER):$(_DB_PASS)@ocf-notes:5432/notes?ssl=no-verify",
         "CMD_DB_DIALECT": "postgres",
         "CMD_S3_ENDPOINT": "https://o3.ocf.io",
@@ -95,6 +106,24 @@ def objects():
                 "secretKeyRef": {
                     "name": "notes.ocf-notes.credentials.postgresql.acid.zalan.do",
                     "key": "password",
+                }
+            },
+        },
+        {
+            "name": "CMD_SESSION_SECRET",
+            "valueFrom": {
+                "secretKeyRef": {
+                    "name": secret.obj.metadata.name,
+                    "key": "session-secret",
+                }
+            },
+        },
+        {
+            "name": "CMD_OAUTH2_CLIENT_SECRET",
+            "valueFrom": {
+                "secretKeyRef": {
+                    "name": secret.obj.metadata.name,
+                    "key": "oidc-client-secret",
                 }
             },
         },
